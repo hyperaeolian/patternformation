@@ -25,6 +25,12 @@ bool mandelbrot = true;
 bool julia = false;
 bool buddhabrot = false;
 
+typedef struct ComplexNumber {
+  float real;
+  float imag;
+
+};
+
 // the field being drawn and manipulated
 COLOR_FIELD_2D field(xRes, yRes);
 
@@ -330,6 +336,21 @@ void glutKeyboard(unsigned char key, int x, int y)
 {
   switch (key)
   {
+    case '1':
+      julia = true;
+      buddhabrot = false;
+      mandelbrot = false;
+      break;
+    case '2': 
+      mandelbrot = true;
+      julia = false;
+      buddhabrot = false;
+      break;
+    case '3':
+      buddhabrot = true;
+      julia = false;
+      mandelbrot = false;
+      break;
     case 'a':
       animate = !animate;
       break;      
@@ -532,6 +553,7 @@ void runEverytime(){
       VEC3F p;
       float tmp_x, tmp_y;
       int t = 0;
+      int q;
       p.x = x * (4.5/xRes) - 4.5/2;
       p.y = y * (4.5/yRes) - 4.5/2;
       VEC3F original = p;
@@ -545,12 +567,18 @@ void runEverytime(){
           p.x += original.x;
           p.y += original.y;
         }
+        if (buddhabrot){
+         /* p.x += 0.285 + (sin(p.x) * cos(p.x)) * (sin(p.y) * cos(p.y));
+          p.y += sqrt(p.x * p.x * p.y * p.y * cos(original.y) * sin(original.y)); */
+          p.x += (pow(p.x,3) + pow(p.y,3)) * exp(pow(p.x,3) + pow(p.y,3)) + 0.33;
+        }
         t++;
       }
       field(x,y) = t;
     }
   }
   field.normalize();
+  usleep(100000);
 }
 
 ///////////////////////////////////////////////////////////////////////

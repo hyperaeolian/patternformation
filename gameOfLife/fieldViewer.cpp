@@ -81,16 +81,7 @@ struct Algo {
         field(x+2,y+1) = 1;
         field(x+1,y+2) = 1;
     }
-    /*
-     field(25,9) = field(23,8) = field(25,8) = field(13,7) = field(14,7) =
-        field(21,7) = field(22,7) = field(35,7) = field(36,7) = field(12,6) =
-        field(16,6) = field(21,6) = field(22,6) = field(35,6) = field(36,6) = 
-        field(1,5)  = field(2,5)  = field(11,5) = field(17,5) = field(21,5) = 
-        field(22,5) = field(1,4)  = field(2,4)  = field(11,4) = field(15,4) = 
-        field(17,4) = field(18,4) = field(23,4) = field(25,4) = field(11,3) = 
-        field(17,3) = field(25,3) = field(12,2) = field(16,2) = field(13,1) =
-        field(14,1) = 1;
-*/
+
     void glosperGliderGun(int x){
         //y = x - 16
         int y = x - 16;
@@ -126,6 +117,7 @@ struct Algo {
 
 typedef Algo* gol_algo;
 gol_algo automaton = new Algo();
+
 ///////////////////////////////////////////////////////////////////////
 // Figure out which field element is being pointed at, set xField and
 // yField to them
@@ -571,7 +563,7 @@ void runEverytime(){
             int neighbors = field(x-1,y+1) + field(x,y+1) + field(x+1,y+1) +
                             field(x-1,y)   + field(x+1,y) + field(x-1,y-1) +
                             field(x,y-1)   + field(x+1,y-1);
-                            
+
             if (field(x,y) == 1){
                 next(x,y) = neighbors == 2 || neighbors == 3 ? 1 : 0;
             }   
@@ -582,7 +574,7 @@ void runEverytime(){
         }
     }
     field = next;
-    usleep(1000000);
+    //usleep(1000000);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -602,17 +594,19 @@ void runOnce(){
      //automaton->glosperGliderGun(140);
      //automaton->glosperGliderGun(160);
    //  automaton->acorn(160);
+     automaton->pulsar(15,15);
      automaton->pulsar(25,25);
      automaton->pulsar(35,35);
      automaton->pulsar(45,45);
      automaton->pulsar(55,55);
      automaton->pulsar(65,65);
      automaton->pulsar(75,75);
-
+     automaton->pulsar(85,85);
      automaton->pulsar(25,75);
+     automaton->pulsar(15,85);
      automaton->pulsar(35,65);
      automaton->pulsar(45,55);
-
+     automaton->pulsar(85,15);
      automaton->pulsar(75,25);
      automaton->pulsar(65,35);
      automaton->pulsar(55,45);
