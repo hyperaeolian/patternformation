@@ -4,6 +4,7 @@
 #include "VEC3F.h"
 #include "MERSENNE_TWISTER.h"
 #include <iostream>
+#include <complex>
 #include "QUICKTIME_MOVIE.h"
 #include "MATRIX.h"
 #include "VECTOR.h"
@@ -18,70 +19,16 @@
 using namespace std;
 
 // resolution of the field
-int xRes = 800;
-int yRes = 800;
+int xRes = 900;
+int yRes = 900;
 
 bool mandelbrot = true;
 bool julia = false;
 bool buddhabrot = false;
 
-typedef struct complex {
-
-  float real;
-  float imag;
-  
-  complex& operator=(const complex& num){
-    real = num.real;
-    imag = num.imag;
-    return *this;
-  }
-
-  complex& operator+=(const complex& num){
-    real += num.real;
-    imag += num.imag;
-    return *this;
-  }
-
-  complex& operator*(const complex& num){
-    real = real * num.real - imag * num.imag;
-    imag = real * num.imag + imag * num.real;
-    return *this;
-  }
-
-};
-
-//complex complex;
-
-float mag(complex z){ return sqrt(pow(z.real,2) + pow(z.imag,2)); }
-
-
-
-
 // the field being drawn and manipulated
 COLOR_FIELD_2D field(xRes, yRes);
 
-void renderMandelbrot(int location){ 
-  for (int x = 0; x < xRes/location; x++){
-    for (int y = 0; y < yRes/location; y++){
-      complex z, c;
-      float tmpX, tmpY;
-      int t = 0;
-      z.real = x * 4.5/(xRes/location) - 2.25;
-      z.imag = y * 4.5/(yRes/location) - 2.25;
-      c = z;
-      while (mag(z) < 2 && t < 100){
-        tmpX = pow(z.real,2) - pow(z.imag,2);
-        tmpY = 2 * z.real * z.imag;
-        z.real = tmpX;
-        z.imag = tmpY;
-        z += c;
-        t++;
-      }
-      field(x,y).r = t;
-    }
-  }
-  field.normalize();
-}
 
 // the resolution of the OpenGL window -- independent of the field resolution
 int xScreenRes = 800;
@@ -596,36 +543,20 @@ int main(int argc, char** argv)
 // This function is called every frame -- do something interesting
 // here.
 ///////////////////////////////////////////////////////////////////////
+
 void runEverytime(){
-  
-  for (int x = 0; x < xRes - 1; x++){
-    for (int y = 0; y < yRes - 1; y++){
-      complex z, c;
-      float tmpX, tmpY;
-      int t = 0;
-      z.real = x * 4.5/xRes - 2.25;
-      z.imag = y * 4.5/yRes - 2.25;
-     // z.real = (float) drand48() * (x * 4.5/xRes - 2.25);
-     // z.imag = (float) drand48() * (y * 4.5/yRes - 2.25);
-      c = z;
-      while (mag(z) < 2 && t < 100){
-        tmpX = pow(z.real,2) - pow(z.imag,2);
-        tmpY = 2 * z.real * z.imag;
-        z.real = tmpX;
-        z.imag = tmpY;
+  for (int x = 0; x < xRes; x++){
+    for (int y = 0; y < yRes; y++){
+      std::complex<double> z((x * 4.5/xRes - 2.25),(y * 4.5/yRes - 2.25));
+      std::complex<double> c(z);
+      int iter = 0;
+      while (sqrt(pow(z.real(),2) + pow(z.imag(),2)) < 2 && iter < 100){
+        z = pow(z,2);
         if (mandelbrot) z += c;
-        if (julia) {
-          z.real += -0.08;
-          z.imag += 0.156;
-        }
-        if (buddhabrot){
-          z = c * z;
-        }
-        t++;
+        if (julia) z += 0.285;
+        iter++;
       }
-      field(x,y) = t;
-      if (t > 50 && t < 99) field(x,y).r = t;
-   
+      field(x,y) = iter;
     }
   }
   field.normalize();
