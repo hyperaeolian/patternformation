@@ -25,14 +25,63 @@ bool mandelbrot = true;
 bool julia = false;
 bool buddhabrot = false;
 
-typedef struct ComplexNumber {
+typedef struct complex {
+
   float real;
   float imag;
+  
+  complex& operator=(const complex& num){
+    real = num.real;
+    imag = num.imag;
+    return *this;
+  }
+
+  complex& operator+=(const complex& num){
+    real += num.real;
+    imag += num.imag;
+    return *this;
+  }
+
+  complex& operator*(const complex& num){
+    real = real * num.real - imag * num.imag;
+    imag = real * num.imag + imag * num.real;
+    return *this;
+  }
 
 };
 
+//complex complex;
+
+float mag(complex z){ return sqrt(pow(z.real,2) + pow(z.imag,2)); }
+
+
+
+
 // the field being drawn and manipulated
 COLOR_FIELD_2D field(xRes, yRes);
+
+void renderMandelbrot(int location){ 
+  for (int x = 0; x < xRes/location; x++){
+    for (int y = 0; y < yRes/location; y++){
+      complex z, c;
+      float tmpX, tmpY;
+      int t = 0;
+      z.real = x * 4.5/(xRes/location) - 2.25;
+      z.imag = y * 4.5/(yRes/location) - 2.25;
+      c = z;
+      while (mag(z) < 2 && t < 100){
+        tmpX = pow(z.real,2) - pow(z.imag,2);
+        tmpY = 2 * z.real * z.imag;
+        z.real = tmpX;
+        z.imag = tmpY;
+        z += c;
+        t++;
+      }
+      field(x,y).r = t;
+    }
+  }
+  field.normalize();
+}
 
 // the resolution of the OpenGL window -- independent of the field resolution
 int xScreenRes = 800;
@@ -548,37 +597,38 @@ int main(int argc, char** argv)
 // here.
 ///////////////////////////////////////////////////////////////////////
 void runEverytime(){
+  
   for (int x = 0; x < xRes - 1; x++){
     for (int y = 0; y < yRes - 1; y++){
-      VEC3F p;
-      float tmp_x, tmp_y;
+      complex z, c;
+      float tmpX, tmpY;
       int t = 0;
-      int q;
-      p.x = x * (4.5/xRes) - 4.5/2;
-      p.y = y * (4.5/yRes) - 4.5/2;
-      VEC3F original = p;
-      while (sqrt(pow(p.x,2) + pow(p.y,2)) < 2 && t < 100){
-        tmp_x = pow(p.x,2) - pow(p.y,2);
-        tmp_y = 2 * p.x * p.y;
-        p.x = tmp_x;
-        p.y = tmp_y;
-        if (julia) p.x += 0.285;
-        if (mandelbrot){
-          p.x += original.x;
-          p.y += original.y;
+      z.real = x * 4.5/xRes - 2.25;
+      z.imag = y * 4.5/yRes - 2.25;
+     // z.real = (float) drand48() * (x * 4.5/xRes - 2.25);
+     // z.imag = (float) drand48() * (y * 4.5/yRes - 2.25);
+      c = z;
+      while (mag(z) < 2 && t < 100){
+        tmpX = pow(z.real,2) - pow(z.imag,2);
+        tmpY = 2 * z.real * z.imag;
+        z.real = tmpX;
+        z.imag = tmpY;
+        if (mandelbrot) z += c;
+        if (julia) {
+          z.real += -0.08;
+          z.imag += 0.156;
         }
         if (buddhabrot){
-         /* p.x += 0.285 + (sin(p.x) * cos(p.x)) * (sin(p.y) * cos(p.y));
-          p.y += sqrt(p.x * p.x * p.y * p.y * cos(original.y) * sin(original.y)); */
-          p.x += (pow(p.x,3) + pow(p.y,3)) * exp(pow(p.x,3) + pow(p.y,3)) + 0.33;
+          z = c * z;
         }
         t++;
       }
       field(x,y) = t;
+      if (t > 50 && t < 99) field(x,y).r = t;
+   
     }
   }
   field.normalize();
-  usleep(100000);
 }
 
 ///////////////////////////////////////////////////////////////////////
