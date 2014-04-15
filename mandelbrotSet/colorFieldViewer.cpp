@@ -19,8 +19,8 @@
 using namespace std;
 
 // resolution of the field
-int xRes = 900;
-int yRes = 900;
+int xRes = 5000;
+int yRes = 5000;
 
 bool mandelbrot = true;
 bool julia = false;
@@ -28,7 +28,9 @@ bool buddhabrot = false;
 
 // the field being drawn and manipulated
 COLOR_FIELD_2D field(xRes, yRes);
+COLOR_FIELD_2D next(xRes, yRes);
 
+double mag(std::complex<double> v) {return sqrt(pow(v.real(),2) + pow(v.imag(),2)); }
 
 // the resolution of the OpenGL window -- independent of the field resolution
 int xScreenRes = 800;
@@ -333,14 +335,14 @@ void glutKeyboard(unsigned char key, int x, int y)
   switch (key)
   {
     case '1':
-      julia = true;
-      buddhabrot = false;
-      mandelbrot = false;
-      break;
-    case '2': 
       mandelbrot = true;
       julia = false;
       buddhabrot = false;
+      break;
+    case '2': 
+       julia = true;
+      buddhabrot = false;
+      mandelbrot = false;
       break;
     case '3':
       buddhabrot = true;
@@ -543,23 +545,28 @@ int main(int argc, char** argv)
 // This function is called every frame -- do something interesting
 // here.
 ///////////////////////////////////////////////////////////////////////
-
 void runEverytime(){
-  for (int x = 0; x < xRes; x++){
+      float K = 0.1;
+    for (int x = 0; x < xRes; x++){
     for (int y = 0; y < yRes; y++){
       std::complex<double> z((x * 4.5/xRes - 2.25),(y * 4.5/yRes - 2.25));
       std::complex<double> c(z);
+      std::complex<double> u(-0.35,sin(c.real()));
       int iter = 0;
-      while (sqrt(pow(z.real(),2) + pow(z.imag(),2)) < 2 && iter < 100){
+      while (mag(z) < 2 && iter < 100){
         z = pow(z,2);
         if (mandelbrot) z += c;
-        if (julia) z += 0.285;
+        if (julia) z += u;
         iter++;
       }
-      field(x,y) = iter;
-    }
+       field(x,y).r += (iter + 100) % 100;
+       field(x,y).b = z.real() + iter + z.imag();
+       field(x,y).g = pow(z.real(),2) * 1.5;
+       K += 0.1;
   }
+    }
   field.normalize();
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -568,5 +575,6 @@ void runEverytime(){
 ///////////////////////////////////////////////////////////////////////
 void runOnce()
 {
+
 }
 
