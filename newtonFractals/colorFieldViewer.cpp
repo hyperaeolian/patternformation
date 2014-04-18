@@ -1,10 +1,10 @@
 #include <cmath>
+#include <complex>
 #include "COLOR_FIELD_2D.h"
 #include "FIELD_2D.h"
 #include "VEC3F.h"
 #include "MERSENNE_TWISTER.h"
 #include <iostream>
-#include <complex>
 #include "QUICKTIME_MOVIE.h"
 #include "MATRIX.h"
 #include "VECTOR.h"
@@ -19,25 +19,16 @@
 using namespace std;
 
 // resolution of the field
-int xRes = 900;
-int yRes = 900;
-
-bool mandelbrot = true;
-bool julia = false;
-bool buddhabrot = false;
-bool esc_coloring = false;
-bool cont_coloring = true;
+int xRes = 800;
+int yRes = 800;
 
 // the field being drawn and manipulated
 COLOR_FIELD_2D field(xRes, yRes);
-COLOR_FIELD_2D density(xRes, yRes);
-
-double mag(std::complex<double> v) {return sqrt(pow(v.real(),2) + pow(v.imag(),2)); }
 
 // the resolution of the OpenGL window -- independent of the field resolution
 int xScreenRes = 800;
 int yScreenRes = 800;
-
+double mag(std::complex<double> v) {return sqrt(pow(v.real(),2) + pow(v.imag(),2)); }
 // Text for the title bar of the window
 string windowLabel("Field Viewer");
 
@@ -336,29 +327,6 @@ void glutKeyboard(unsigned char key, int x, int y)
 {
   switch (key)
   {
-    case '1':
-      mandelbrot = true;
-      julia = false;
-      buddhabrot = false;
-      break;
-    case '2': 
-       julia = true;
-      buddhabrot = false;
-      mandelbrot = false;
-      break;
-    case '3':
-      buddhabrot = true;
-      julia = false;
-      mandelbrot = false;
-      break;
-    case 'e':
-      esc_coloring = true;
-      cont_coloring = false;
-      break;
-    case 'c':
-      cont_coloring = true;
-      esc_coloring = false;
-      break;
     case 'a':
       animate = !animate;
       break;      
@@ -555,41 +523,47 @@ int main(int argc, char** argv)
 // This function is called every frame -- do something interesting
 // here.
 ///////////////////////////////////////////////////////////////////////
-void runEverytime(){
-
-    double epsilon = 0.00001;
-    int esc, max_iters = 10;
-    std::vector< std::complex<double> > Zs(xRes);
-    
+void runEverytime()
+{
+  /*
+    int esc, max_iters = 100;  
+    VEC3F p;
     for (int x = 0; x < xRes; x++){
       for (int y = 0; y < yRes; y++){
-        std::complex<double> z((x * 4.5/xRes - 2.25),(y * 4.5/yRes - 2.25));
+        p.x = x * 10.0/xRes - 5.0;
+        p.y = y * 10.0/yRes - 5.0;
         std::complex<double> c(z);
         esc = 0;
-        Zs.clear();
-        while (mag(z) < 20 && esc < max_iters){
+        while (mag(z) < 2 && esc < max_iters){
           z = pow(z,2);
-          if (mandelbrot) z += c;
-          if (julia) z += 0.285;
-          Zs.push_back(z);
+          z += c;
           esc++;
         }
-
-        if (esc < max_iters){
-          for (int i = 0; i < Zs.size(); i++){
-            
-          }
-        }
-
-        if (esc_coloring) field(x,y) = esc; 
-        if (cont_coloring){
-          field(x,y).r = esc - (log(log(mag(z) + epsilon)) / log(2));
-          field(x,y).g = (log(log(mag(z) + epsilon)) / pow(2.0,esc));
-          field(x,y).b += 1;
-        }
-      }
+      field(x,y) = esc; 
     }
-    field.normalize();
+  }
+  field.normalize();
+*/
+
+  for (int x = 0; x < xRes; x++){ 
+    for (int y = 0; y < yRes; y++){
+    std::complex<double> p((x * (10.0/xRes) - 5.0), (y * (10.0/yRes) - 5.0));
+    std::complex<double> f(p), f_prime(0,0), f_of_p(p);
+    int t = 0;
+    while (mag(f_of_p) > 1e-3 && t < 100){
+      f_of_p = pow(p,3) - 6.0 * pow(p,2) + 11.0*p - 6.0;
+      f_prime = 3.0*pow(p,2) - 12.0*p + 11.0;
+      f = f_of_p;
+      p -= f / f_prime;
+      t++;
+    }
+    field(x,y).r = t;
+    field(x,y).g = t;
+    field(x,y).b = t;
+  }
+}
+  field.normalize();
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -598,6 +572,5 @@ void runEverytime(){
 ///////////////////////////////////////////////////////////////////////
 void runOnce()
 {
-
 }
 
