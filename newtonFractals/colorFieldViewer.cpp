@@ -25,10 +25,14 @@ int yRes = 800;
 // the field being drawn and manipulated
 COLOR_FIELD_2D field(xRes, yRes);
 
+
 // the resolution of the OpenGL window -- independent of the field resolution
 int xScreenRes = 800;
 int yScreenRes = 800;
 double mag(std::complex<double> v) {return sqrt(pow(v.real(),2) + pow(v.imag(),2)); }
+
+bool newton = true;
+
 // Text for the title bar of the window
 string windowLabel("Field Viewer");
 
@@ -525,41 +529,38 @@ int main(int argc, char** argv)
 ///////////////////////////////////////////////////////////////////////
 void runEverytime()
 {
-  /*
-    int esc, max_iters = 100;  
-    VEC3F p;
-    for (int x = 0; x < xRes; x++){
-      for (int y = 0; y < yRes; y++){
-        p.x = x * 10.0/xRes - 5.0;
-        p.y = y * 10.0/yRes - 5.0;
-        std::complex<double> c(z);
-        esc = 0;
-        while (mag(z) < 2 && esc < max_iters){
-          z = pow(z,2);
-          z += c;
-          esc++;
-        }
-      field(x,y) = esc; 
-    }
-  }
-  field.normalize();
-*/
-
+  double epsilon = 0.0001;
+  int max_iters = 100;
+  double alpha = 2;
+  double p = 3.0;
   for (int x = 0; x < xRes; x++){ 
     for (int y = 0; y < yRes; y++){
-    std::complex<double> p((x * (10.0/xRes) - 5.0), (y * (10.0/yRes) - 5.0));
-    std::complex<double> f(p), f_prime(0,0), f_of_p(p);
+    std::complex<double> z((x * (10.0/xRes) - 5.0), (y * (10.0/yRes) - 5.0));
+    std::complex<double> c(z), p_prime, p_of_z(z), w(5,2);
     int t = 0;
-    while (mag(f_of_p) > 1e-3 && t < 100){
-      f_of_p = pow(p,3) - 6.0 * pow(p,2) + 11.0*p - 6.0;
-      f_prime = 3.0*pow(p,2) - 12.0*p + 11.0;
-      f = f_of_p;
-      p -= f / f_prime;
+    while (mag(p_of_z) > 1e-3 && t < max_iters){
+      // if (newton){
+      //   f_of_p = pow(p,3) - 6.0 * pow(p,2) + 11.0*p - 6.0;
+      //   f_prime = 3.0*pow(p,2) - 12.0*p + 11.0;
+      // }
+   //   p_of_z = pow(z,3) - 1.0;
+   //   p_prime = 3.0*pow(z,2); 
+   //  p_of_z = pow(z,3) - (2.0 * z) + 2.0;
+   //  p_prime = 3.0*pow(z,2) - 2.0;
+    //  p_of_z = pow(z,8) + 15.0*pow(z,4) - 16.0;
+    //  p_prime = 60.0 * pow(z,3);
+    //  p_of_z = pow(z,6) + pow(z,3) - 1.0;
+    //  p_prime = 3.0*(2.0*pow(z,5) + pow(z,2));
+      p_of_z = pow(z,5) - 3.0 * z.imag() * pow(z,3) - (w * pow(z,2)) + 3.0*z + 1.0;
+      p_prime = M_PI * 3.0*z.imag()*pow(z,M_PI) - (w*2.0)*z + 3.0;
+      z -= p_of_z / p_prime;
       t++;
     }
-    field(x,y).r = t;
-    field(x,y).g = t;
-    field(x,y).b = t;
+ //field(x,y) = t;
+    // field(x,y).r = t - (z.real() * z.imag());
+    //   // field(x,y).r = t - (log(log(mag(z) + epsilon)) / pow(2.0,t));//t - z.real() + z.imag();
+       field(x,y).g = t - z.imag() + z.real();
+       field(x,y).b = t - z.real() + z.imag();
   }
 }
   field.normalize();
