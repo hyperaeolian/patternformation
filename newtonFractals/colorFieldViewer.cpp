@@ -24,6 +24,7 @@ int yRes = 800;
 
 // the field being drawn and manipulated
 COLOR_FIELD_2D field(xRes, yRes);
+COLOR_FIELD_2D edges(xRes, yRes);
 
 
 // the resolution of the OpenGL window -- independent of the field resolution
@@ -529,41 +530,15 @@ int main(int argc, char** argv)
 ///////////////////////////////////////////////////////////////////////
 void runEverytime()
 {
-  double epsilon = 0.0001;
-  int max_iters = 100;
-  double alpha = 2;
-  double p = 3.0;
-  for (int x = 0; x < xRes; x++){ 
-    for (int y = 0; y < yRes; y++){
-    std::complex<double> z((x * (10.0/xRes) - 5.0), (y * (10.0/yRes) - 5.0));
-    std::complex<double> c(z), p_prime, p_of_z(z), w(5,2);
-    int t = 0;
-    while (mag(p_of_z) > 1e-3 && t < max_iters){
-      // if (newton){
-      //   f_of_p = pow(p,3) - 6.0 * pow(p,2) + 11.0*p - 6.0;
-      //   f_prime = 3.0*pow(p,2) - 12.0*p + 11.0;
-      // }
-   //   p_of_z = pow(z,3) - 1.0;
-   //   p_prime = 3.0*pow(z,2); 
-   //  p_of_z = pow(z,3) - (2.0 * z) + 2.0;
-   //  p_prime = 3.0*pow(z,2) - 2.0;
-    //  p_of_z = pow(z,8) + 15.0*pow(z,4) - 16.0;
-    //  p_prime = 60.0 * pow(z,3);
-    //  p_of_z = pow(z,6) + pow(z,3) - 1.0;
-    //  p_prime = 3.0*(2.0*pow(z,5) + pow(z,2));
-      p_of_z = pow(z,5) - 3.0 * z.imag() * pow(z,3) - (w * pow(z,2)) + 3.0*z + 1.0;
-      p_prime = M_PI * 3.0*z.imag()*pow(z,M_PI) - (w*2.0)*z + 3.0;
-      z -= p_of_z / p_prime;
-      t++;
+      VEC3F diff;
+    double threshold = 0.15;
+     for (int x = 1; x < xRes; x++){ 
+      for (int y = 0; y < yRes; y++){
+        diff = field(x+1,y) - field(x-1,y);
+        if (diff.x > threshold || diff.y > threshold || diff.z > threshold) edges(x,y) = 1;
+      }
     }
- //field(x,y) = t;
-    // field(x,y).r = t - (z.real() * z.imag());
-    //   // field(x,y).r = t - (log(log(mag(z) + epsilon)) / pow(2.0,t));//t - z.real() + z.imag();
-       field(x,y).g = t - z.imag() + z.real();
-       field(x,y).b = t - z.real() + z.imag();
-  }
-}
-  field.normalize();
+    field = edges;  
 
 }
 
@@ -573,5 +548,44 @@ void runEverytime()
 ///////////////////////////////////////////////////////////////////////
 void runOnce()
 {
+  double epsilon = 0.0001;
+  int max_iters = 100;
+  double alpha = 2;
+  double p = 3.0;
+  for (int x = 0; x < xRes; x++){ 
+    for (int y = 0; y < yRes; y++){
+    std::complex<double> z((x * (10.0/xRes) - 5.0), (y * (10.0/yRes) - 5.0));
+    std::complex<double> c(z), p_prime, p_of_z(z), w(5,2);
+    int t = 0;
+
+    while (mag(p_of_z) > 1e-3 && t < max_iters){
+      // if (newton){
+      //   f_of_p = pow(p,3) - 6.0 * pow(p,2) + 11.0*p - 6.0;
+      //   f_prime = 3.0*pow(p,2) - 12.0*p + 11.0;
+      // }
+      p_of_z = pow(z,3) - 1.0;
+      p_prime = 3.0*pow(z,2); 
+   /*   
+    p_of_z = pow(z,3) - (2.0 * z) + 2.0;
+    p_prime = 3.0*pow(z,2) - 2.0;
+     p_of_z = pow(z,8) + 15.0*pow(z,4) - 16.0;
+     p_prime = 60.0 * pow(z,3);
+     p_of_z = pow(z,6) + pow(z,3) - 1.0;
+     p_prime = 3.0*(2.0*pow(z,5) + pow(z,2));
+     p_of_z = pow(z,5) - 3.0 * z.imag() * pow(z,3) - (w * pow(z,2)) + 3.0*z + 1.0;
+     p_prime = M_PI * 3.0*z.imag()*pow(z,M_PI) - (w*2.0)*z + 3.0;
+    */  
+      z -= p_of_z / p_prime;
+      t++;
+    }
+
+    //   // field(x,y).r = t - (log(log(mag(z) + epsilon)) / pow(2.0,t));//t - z.real() + z.imag();
+       field(x,y).g = t - z.imag() + z.real();
+       field(x,y).b = t - z.real() + z.imag();
+      
+       //field = edges;
+  }
+}
+  field.normalize();
 }
 
