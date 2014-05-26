@@ -514,6 +514,7 @@ void runEverytime()
         laplacian = -4 * old(x,y) + old(x+1,y) + old(x-1,y) + old(x,y+1) + old(x,y-1);
         field(x,y) += dt * alpha * laplacian;
     }
+
 }
 
 ///////////////////////////////////////////////////////////////////////

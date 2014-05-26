@@ -25,8 +25,8 @@ int yRes = 900;
 bool mandelbrot = true;
 bool julia = false;
 bool buddhabrot = false;
-bool esc_coloring = false;
-bool cont_coloring = true;
+bool esc_coloring = true;
+bool cont_coloring = false;
 
 // the field being drawn and manipulated
 COLOR_FIELD_2D field(xRes, yRes);
@@ -557,8 +557,17 @@ int main(int argc, char** argv)
 ///////////////////////////////////////////////////////////////////////
 void runEverytime(){
 
-    double epsilon = 0.00001;
-    int esc, max_iters = 10;
+    
+}
+
+///////////////////////////////////////////////////////////////////////
+// This is called once at the beginning so you can precache
+// something here
+///////////////////////////////////////////////////////////////////////
+void runOnce()
+{
+  double epsilon = 0.00001;
+    int esc, max_iters = 500;
     std::vector< std::complex<double> > Zs(xRes);
     
     for (int x = 0; x < xRes; x++){
@@ -571,15 +580,10 @@ void runEverytime(){
           z = pow(z,2);
           if (mandelbrot) z += c;
           if (julia) z += 0.285;
-          Zs.push_back(z);
           esc++;
         }
-
-        if (esc < max_iters){
-          for (int i = 0; i < Zs.size(); i++){
-            
-          }
-        }
+        Zs.push_back(z);
+      cout << "Zs not in the set: " << z << endl;
 
         if (esc_coloring) field(x,y) = esc; 
         if (cont_coloring){
@@ -590,14 +594,6 @@ void runEverytime(){
       }
     }
     field.normalize();
-}
-
-///////////////////////////////////////////////////////////////////////
-// This is called once at the beginning so you can precache
-// something here
-///////////////////////////////////////////////////////////////////////
-void runOnce()
-{
 
 }
 

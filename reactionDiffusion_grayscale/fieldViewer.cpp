@@ -24,13 +24,14 @@ FIELD_2D A(xRes, yRes);
 FIELD_2D B(xRes, yRes);
 FIELD_2D laplacian(xRes, yRes);
 
+//My function prototypes
 void diffuse(FIELD_2D& chemical, float D);
+float R_A(float a, float b, float F);
+float R_B(float a, float b, float F, float K);
+
 // the resolution of the OpenGL window -- independent of the field resolution
 int xScreenRes = 850;
 int yScreenRes = 850;
-
-float R_A(float a, float b, float F){ return -a * (b * b) + F * (1 - a); }
-float R_B(float a, float b, float F, float K){ return a * (b * b) - (F + K) * b; }
 
 // Text for the title bar of the window
 string windowLabel("Field Viewer");
@@ -505,35 +506,61 @@ int main(int argc, char** argv)
 // This function is called every frame -- do something interesting
 // here.
 ///////////////////////////////////////////////////////////////////////
+
+float R_A(float a, float b, float F){ return -a * (b * b) + F * (1 - a); }
+float R_B(float a, float b, float F, float K){ return a * (b * b) - (F + K) * b;  }
+
+/*
+float R_A(float A, float B){
+    float epsilon = 0.02;
+    float a = 0.75;
+    float b = 0.01;
+    return A * (1 - A) * ( (A - ((B + 0.01)/0.75)) /0.02  );
+}
+
+float R_B(float A, float B){
+    return A - B;
+}
+*/
 void diffuse(FIELD_2D& chemical, float D){
     float dt = 0.1;
+    //float dt = 0.02;
     float dx = 0.01;
+   // float dx = 0.825;
     float alpha = D * dt / (dx*dx);
-    for (int x = 1; x < xRes; x++) for (int y = 1; y < yRes; y++){
-        laplacian(x,y) = -4 * chemical(x,y) + chemical(x+1,y) + chemical(x-1,y) +
-                            chemical(x,y+1) + chemical(x,y-1);
-        laplacian(x,y) *= alpha; 
+    for (int x = 1; x < xRes; x++){ 
+        for (int y = 1; y < yRes; y++){
+            laplacian(x,y) = -4 * chemical(x,y) + chemical(x+1,y) + chemical(x-1,y) 
+                                            + chemical(x,y+1) + chemical(x,y-1);
+            laplacian(x,y) *= alpha;
+        } 
     }
     chemical += laplacian;
 }
 
-void runEverytime()
-{
+void runEverytime(){
   float F = 0.05;  
   float K = 0.0675;
   float dt = 0.1;
   float D_A = 0.0002;
   float D_B = 0.00001;
+//  float D_A = 0.75;
+//  float D_B = 0;
 
   diffuse(A, D_A);
   diffuse(B, D_B);
   for (int y = 1; y < yRes-1; y++){
     for (int x = 1; x < xRes-1; x++){
-      float reactA = R_A( A(x,y), B(x,y),F  );
+       float reactA = R_A( A(x,y), B(x,y),F  );
+     //   float reactA = R_A( A(x,y), B(x,y));
       float reactB = R_B( A(x,y), B(x,y),F,K);
+    //    float reactB = R_B( A(x,y), B(x,y));
       A(x,y) += dt * reactA;
       B(x,y) += dt * reactB;
-       if (x > 90 && x < 110 && y > 90 && y < 110) B(x,y) = 1;
+       if (x > 90 && x < 110 && y > 90 && y < 110){
+        B(x,y) = 1;
+       // B(x,y) = 0.75 * 0.5;
+    }
     }
   }
 
