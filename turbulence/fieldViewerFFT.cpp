@@ -540,7 +540,7 @@ void build_NoiseTile(FIELD_2D& f){
     MERSENNE_TWISTER twister;
     for (int x = 0; x < xRes; x++) 
       for (int y = 0; y < yRes; y++) 
-        field(x,y) = twister.rand(100);
+        noiseTile(x,y) = twister.rand(100);
 
     fieldFFT.FFT(f);
     realField = fieldFFT.real();
@@ -598,7 +598,7 @@ void runEverytime()
 ///////////////////////////////////////////////////////////////////////
 void runOnce()
 {
-    build_NoiseTile(field);
+    build_NoiseTile(noiseTile);
     for (int x = 1; x < xRes-1; ++x){
       for (int y = 1; y < yRes-1; ++y){
         for (int z = 1; z < N; ++z){
